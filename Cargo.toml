@@ -1,0 +1,20 @@
+[package]
+name = "homomorphic-commitments"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+curve25519-dalek = { version = "4", features = ["rand_core"], optional = true }
+rand = { version = "0.8", optional = true }
+
+[features]
+default = ["pedersen", "elgamal"]
+pedersen = ["dep:curve25519-dalek", "dep:rand"]
+elgamal = ["dep:curve25519-dalek", "dep:rand"]
+
+[dev-dependencies]
+criterion = "0.3"
+
+[[bench]]
+name = "commitments"
+harness = false
