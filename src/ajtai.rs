@@ -1,8 +1,5 @@
 use qfall_math::{
-    integer::{MatZ, Z},
-    integer_mod_q::MatZq,
-    rational::{MatQ, Q},
-    traits::GetNumRows,
+    integer::Z, integer_mod_q::MatZq, traits::GetNumRows
 };
 
 // FIXME: I want this to be a usize
@@ -14,8 +11,6 @@ pub struct Commitment {
 }
 
 pub struct PublicKey {
-    /// Columns are the base vectors of the lattice
-    lattice_base: MatQ,
     a_1: MatZq,
     a_2: MatZq,
 }
@@ -41,11 +36,11 @@ impl Commitment {
         }
 
         // Verify that the vector is short
-        let max_length: Q = Q::from(SHORT);
-        if length_with_base(&value, &public_key.lattice_base) >= max_length {
+        let max_length: Z = Z::from(SHORT);
+        if value.norm_eucl_sqrd().unwrap() >= max_length {
             return false;
         }
-        if length_with_base(&randomness, &public_key.lattice_base) >= max_length {
+        if value.norm_eucl_sqrd().unwrap() >= max_length {
             return false;
         }
 
@@ -67,24 +62,11 @@ impl PublicKey {
         let m = m.into();
         let q = q.into();
 
-        let random_base =
-            MatZ::sample_uniform(LATTICE_DIMENSION, LATTICE_DIMENSION, -1024, 1024).unwrap();
-        let lattice_base = MatQ::from(&random_base).gso();
-
         // In theory, A_1 and A_2 could have a different number of columns, but lets not worry about
         // that.
         Self {
-            lattice_base,
             a_1: MatZq::sample_uniform(&n, &m, &q),
             a_2: MatZq::sample_uniform(&n, &m, &q),
         }
     }
-}
-
-#[must_use]
-fn length_with_base(vector: &MatZq, base: &MatQ) -> Q {
-    debug_assert!(vector.is_column_vector());
-
-    let point = base * MatQ::from(&MatZ::from(vector));
-    point.norm_eucl_sqrd().unwrap()
 }
