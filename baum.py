@@ -7,6 +7,9 @@ N = 100
 K = 500 # randomness length
 L = 100 # message length
 
+# l_\infty norm bound for randomness
+beta = 100
+
 
 # Setup
 A_1 = np.concatenate((np.eye(N), np.random.randint(low=0, high=Q, size=[N, K - N])), axis=1)
@@ -15,7 +18,7 @@ A = np.concatenate((A_1, A_2), axis=0)
 
 # Commit
 message = np.random.randint(low=0, high=Q, size=L)
-randomness = np.random.randint(low=0, high=Q, size=K)
+randomness = np.random.randint(low=0, high=beta, size=K)
 
 def compute_commitment():
     return np.remainder(A.dot(randomness), Q) + np.concatenate((np.zeros(N), message), axis=0)
