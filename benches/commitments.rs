@@ -3,7 +3,7 @@ use std::str::FromStr;
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
 use curve25519_dalek::{RistrettoPoint, Scalar};
-use homomorphic_commitments::{ajtai, elgamal, groth, pedersen};
+use homomorphic_commitments::{elgamal, groth, pedersen};
 use qfall_math::{integer::Z, integer_mod_q::MatZq, rational::Q};
 
 pub fn benchmark_pedersen(c: &mut Criterion) {
@@ -91,33 +91,6 @@ pub fn benchmark_groth(c: &mut Criterion) {
     });
 }
 
-pub fn benchmark_ajtai(c: &mut Criterion) {
-    let q = Z::from_str("184006813507777607318533584903054155533044823").unwrap();
-    let public_key = ajtai::PublicKey::random(500, 500, &q);
-    
-    c.bench_function("ajtai-commit", |b| {
-        let commit_to = MatZq::sample_discrete_gauss(500, 1, &q, Z::ONE, Q::ZERO, Q::ONE).unwrap();
-        b.iter(|| {
-            let _ = ajtai::Commitment::create(
-                black_box(&commit_to),
-                black_box(&public_key),
-            );
-        })
-    });
 
-    let commit_to = MatZq::sample_discrete_gauss(500, 1, &q, Z::ONE, Q::ZERO, Q::ONE).unwrap();
-
-    let (valid_commitment, randomness) = ajtai::Commitment::create(
-        black_box(&commit_to),
-        black_box(&public_key),
-    );
-
-    c.bench_function("ajtai-verify", |b| {
-        b.iter(|| {
-            let _ = valid_commitment.is_valid(&commit_to, &randomness, &public_key);
-        })
-    });
-}
-
-criterion_group!(benches, benchmark_pedersen, benchmark_elgamal, benchmark_groth, benchmark_ajtai);
+criterion_group!(benches, benchmark_pedersen, benchmark_elgamal, benchmark_groth);
 criterion_main!(benches);
